@@ -2,20 +2,44 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Collections;
 
 
 public class PlayerNetwork : NetworkBehaviour
 {
-    private NetworkVariable<int> randomNumber = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkManagerUI networkManagerUI;
+    [SerializeField] private Transform spawnedObjectPrefab;
+    private void Awake()
+    {
+        networkManagerUI = GameObject.FindGameObjectWithTag("NetworkManagerUI").GetComponent<NetworkManagerUI>();
+    }
+    private NetworkVariable<MyCustomData> randomNumber = new NetworkVariable<MyCustomData>(
+        new MyCustomData
+        {
+            _int = 56,
+            _bool = true,
+        }, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public struct MyCustomData : INetworkSerializable
+    {
+        public int _int;
+        public bool _bool;
+        public FixedString128Bytes _message;
 
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref _int);
+            serializer.SerializeValue(ref _bool);
+            serializer.SerializeValue(ref _message);
+        }
+    }
 
 
 
     public override void OnNetworkSpawn()
     {
-        randomNumber.OnValueChanged += (int previusValue, int newValue) =>
+        randomNumber.OnValueChanged += (MyCustomData previusValue, MyCustomData newValue) =>
         {
-            Debug.Log("Client ID: " + OwnerClientId + "  random number : " + randomNumber.Value);
+            // Debug.Log("Client ID: " + OwnerClientId + "  random number : " + newValue._int + "; boolState: " + newValue._bool + "Message : " + newValue._message);
         };
     }
     void Update()
@@ -26,7 +50,18 @@ public class PlayerNetwork : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.T))
         {
-            randomNumber.Value = Random.Range(0, 100);
+
+            Transform spawnedObjectTransfrom = Instantiate(spawnedObjectPrefab);
+            spawnedObjectPrefab.GetComponent<NetworkObject>().Spawn(true);
+             
+            // TestClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
+            // randomNumber.Value = new MyCustomData
+            // {
+            //     _int = Random.Range(0, 100),
+            //     _bool = false,
+            //     _message = "TestSercerRpc   +   OwnerClientId=>>" + OwnerClientId
+            // };
+
         }
         Vector3 moveDir = new Vector3(0, 0, 0);
         if (Input.GetKey(KeyCode.W)) moveDir.z = +1f;
@@ -36,5 +71,19 @@ public class PlayerNetwork : NetworkBehaviour
 
         float movmentSpeed = 3;
         transform.position += moveDir * movmentSpeed * Time.deltaTime;
+    }
+
+    [ServerRpc]
+    private void TestServerRpc(ServerRpcParams serverRpcParams)
+    {
+        Debug.Log("TestSercerRpc   +   OwnerClientId=>>" + OwnerClientId + "; serveerRpcParams SenderClientID =>>" + serverRpcParams.Receive.SenderClientId);
+        networkManagerUI.debugConsole.text = serverRpcParams.Receive.SenderClientId.ToString();
+    }
+
+    [ClientRpc]
+    private void TestClientRpc(ClientRpcParams clientRpcParams)
+    {
+        Debug.LogWarning("TestClientRpcs =" + OwnerClientId);
+        networkManagerUI.debugConsole.text = clientRpcParams.ToString();
     }
 }
