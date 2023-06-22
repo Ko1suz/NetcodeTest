@@ -9,6 +9,7 @@ public class PlayerNetwork : NetworkBehaviour
 {
     public NetworkManagerUI networkManagerUI;
     [SerializeField] private Transform spawnedObjectPrefab;
+    Transform spawnedObjectTransfrom;
     private void Awake()
     {
         networkManagerUI = GameObject.FindGameObjectWithTag("NetworkManagerUI").GetComponent<NetworkManagerUI>();
@@ -51,9 +52,9 @@ public class PlayerNetwork : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.T))
         {
 
-            Transform spawnedObjectTransfrom = Instantiate(spawnedObjectPrefab);
-            spawnedObjectPrefab.GetComponent<NetworkObject>().Spawn(true);
-             
+            spawnedObjectTransfrom = Instantiate(spawnedObjectPrefab);
+            spawnedObjectPrefab.GetComponent<NetworkObject>().Spawn();
+
             // TestClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
             // randomNumber.Value = new MyCustomData
             // {
