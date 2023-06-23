@@ -9,6 +9,8 @@ public class PlayerNetwork : NetworkBehaviour
 {
     public NetworkManagerUI networkManagerUI;
     [SerializeField] private Transform spawnedObjectPrefab;
+    [SerializeField] NetworkPrefabsList networkPrefabsList;
+    Transform spawnedObjectTransfrom;
     private void Awake()
     {
         networkManagerUI = GameObject.FindGameObjectWithTag("NetworkManagerUI").GetComponent<NetworkManagerUI>();
@@ -51,9 +53,9 @@ public class PlayerNetwork : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.T))
         {
 
-            Transform spawnedObjectTransfrom = Instantiate(spawnedObjectPrefab);
-            spawnedObjectPrefab.GetComponent<NetworkObject>().Spawn(true);
-             
+            spawnedObjectTransfrom = Instantiate(spawnedObjectPrefab);
+            spawnedObjectTransfrom.GetComponent<NetworkObject>().Spawn(true);
+
             // TestClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1 } } });
             // randomNumber.Value = new MyCustomData
             // {
@@ -62,6 +64,11 @@ public class PlayerNetwork : NetworkBehaviour
             //     _message = "TestSercerRpc   +   OwnerClientId=>>" + OwnerClientId
             // };
 
+        }
+
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            Destroy(spawnedObjectTransfrom.gameObject);
         }
         Vector3 moveDir = new Vector3(0, 0, 0);
         if (Input.GetKey(KeyCode.W)) moveDir.z = +1f;

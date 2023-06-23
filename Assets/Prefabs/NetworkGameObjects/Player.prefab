@@ -176,6 +176,7 @@ MonoBehaviour:
   networkManagerUI: {fileID: 0}
   spawnedObjectPrefab: {fileID: 312075555823213045, guid: 265898a3d231ec74e8788628bd96a208,
     type: 3}
+  networkPrefabsList: {fileID: 11400000, guid: c5749f7d7552e9442b185ff61975c06b, type: 2}
 --- !u!114 &-7936407183228873682
 MonoBehaviour:
   m_ObjectHideFlags: 0
